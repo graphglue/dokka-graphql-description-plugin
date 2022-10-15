@@ -1,6 +1,7 @@
 package io.github.graphglue.dokka
 
 import org.jetbrains.dokka.base.parsers.MarkdownParser
+import org.jetbrains.dokka.base.transformers.documentables.DocumentableReplacerTransformer
 import org.jetbrains.dokka.model.*
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
