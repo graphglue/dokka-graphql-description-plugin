@@ -1,6 +1,7 @@
 import org.jetbrains.dokka.gradle.DokkaTask
 
 val kotlinVersion: String by project
+val dokkaVersion: String by project
 
 description = "A Dokka plugin for using the content of the GraphQLDescription annotation as documentation of no other exists"
 
@@ -18,8 +19,8 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    compileOnly("org.jetbrains.dokka", "dokka-core", kotlinVersion)
-    implementation("org.jetbrains.dokka", "dokka-base", kotlinVersion)
+    compileOnly("org.jetbrains.dokka", "dokka-core", dokkaVersion)
+    implementation("org.jetbrains.dokka", "dokka-base", dokkaVersion)
 }
 
 extra["isReleaseVersion"] = !version.toString().endsWith("SNAPSHOT")

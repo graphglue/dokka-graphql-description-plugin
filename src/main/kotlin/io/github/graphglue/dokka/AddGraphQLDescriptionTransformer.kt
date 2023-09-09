@@ -1,10 +1,10 @@
 package io.github.graphglue.dokka
 
-import org.jetbrains.dokka.base.parsers.MarkdownParser
 import org.jetbrains.dokka.base.transformers.documentables.DocumentableReplacerTransformer
 import org.jetbrains.dokka.model.*
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
+import org.jetbrains.dokka.model.doc.Text
 import org.jetbrains.dokka.model.properties.WithExtraProperties
 import org.jetbrains.dokka.plugability.DokkaContext
 
@@ -15,11 +15,6 @@ import org.jetbrains.dokka.plugability.DokkaContext
  * @param context necessary for [DocumentableReplacerTransformer]
  */
 class AddGraphQLDescriptionTransformer(context: DokkaContext) : DocumentableReplacerTransformer(context) {
-
-    /**
-     * Parser used to parse graphql documentation
-     */
-    private val parser = MarkdownParser({ null }, null)
 
     override fun processClassLike(classlike: DClasslike): AnyWithChanges<DClasslike> {
         return processDocumentable(super.processClassLike(classlike)) { documentable, documentation ->
@@ -70,9 +65,9 @@ class AddGraphQLDescriptionTransformer(context: DokkaContext) : DocumentableRepl
             it.dri.packageName == "com.expediagroup.graphql.generator.annotations" && it.dri.classNames == "GraphQLDescription"
         }
         if (descriptionAnnotation != null && documentable != null) {
-            val description = parser.parseTagWithBody(
-                "description", (descriptionAnnotation.params["value"] as StringValue).text()
-            )
+            val descriptionText =
+                (descriptionAnnotation.params["value"] as StringValue).text().replace("\\s+".toRegex(), " ").trim()
+            val description = Description(Text(descriptionText))
             val newDocumentation = documentable.sourceSets.associateWith { sourceSet ->
                 val existingDocumentation = documentable.documentation[sourceSet]
                 if (existingDocumentation == null) {
