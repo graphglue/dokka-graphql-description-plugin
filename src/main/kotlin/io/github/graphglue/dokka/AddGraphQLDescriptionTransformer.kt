@@ -2,9 +2,7 @@ package io.github.graphglue.dokka
 
 import org.jetbrains.dokka.base.transformers.documentables.DocumentableReplacerTransformer
 import org.jetbrains.dokka.model.*
-import org.jetbrains.dokka.model.doc.Description
-import org.jetbrains.dokka.model.doc.DocumentationNode
-import org.jetbrains.dokka.model.doc.Text
+import org.jetbrains.dokka.model.doc.*
 import org.jetbrains.dokka.model.properties.WithExtraProperties
 import org.jetbrains.dokka.plugability.DokkaContext
 
@@ -67,7 +65,7 @@ class AddGraphQLDescriptionTransformer(context: DokkaContext) : DocumentableRepl
         if (descriptionAnnotation != null && documentable != null) {
             val descriptionText =
                 (descriptionAnnotation.params["value"] as StringValue).text().replace("\\s+".toRegex(), " ").trim()
-            val description = Description(Text(descriptionText))
+            val description = Description((P(children=listOf(Text(descriptionText)))))
             val newDocumentation = documentable.sourceSets.associateWith { sourceSet ->
                 val existingDocumentation = documentable.documentation[sourceSet]
                 if (existingDocumentation == null) {
