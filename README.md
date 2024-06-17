@@ -6,6 +6,6 @@ for a source set if for this source set no description exists and a `GraphQLDesc
 Usage:
 ```kt
 dependencies {
-    dokkaPlugin("io.github.graphglue:dokka-graphql-description-plugin:1.1.0")
+    dokkaPlugin("io.github.graphglue:dokka-graphql-description-plugin:1.1.1")
 }
 ```
