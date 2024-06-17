@@ -46,7 +46,7 @@ tasks {
     val dokka = named("dokkaJavadoc", DokkaTask::class)
     val javadocJar by registering(Jar::class) {
         archiveClassifier.set("javadoc")
-        from("$buildDir/dokka/javadoc")
+        from("${layout.buildDirectory}/dokka/javadoc")
         dependsOn(dokka)
     }
 
