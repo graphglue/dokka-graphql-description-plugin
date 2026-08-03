@@ -1,0 +1,14 @@
+[versions]
+kotlin = "2.4.10"
+dokka = "2.2.0"
+nmcp = "1.6.1"
+
+[libraries]
+dokka-core = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka" }
+dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokka" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+nmcp = { id = "com.gradleup.nmcp", version.ref = "nmcp" }
+nmcpAggregation = { id = "com.gradleup.nmcp.aggregation", version.ref = "nmcp" }

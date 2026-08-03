@@ -1,128 +1,124 @@
-import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 
-val kotlinVersion: String by project
-val dokkaVersion: String by project
-
-description = "A Dokka plugin for using the content of the GraphQLDescription annotation as documentation of no other exists"
+description =
+    "A Dokka plugin for using the content of the GraphQLDescription annotation as documentation of no other exists"
 
 plugins {
-    kotlin("jvm")
-    id("org.jetbrains.dokka")
-    id("maven-publish")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.dokka)
+    alias(libs.plugins.nmcp)
+    alias(libs.plugins.nmcpAggregation)
+    `maven-publish`
     signing
-    id("io.github.gradle-nexus.publish-plugin")
 }
 
-repositories {
-    mavenCentral()
+val isReleaseVersion = !version.toString().endsWith("SNAPSHOT")
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
-    compileOnly("org.jetbrains.dokka", "dokka-core", dokkaVersion)
-    implementation("org.jetbrains.dokka", "dokka-base", dokkaVersion)
+    compileOnly(libs.dokka.core)
+    implementation(libs.dokka.base)
 }
 
-extra["isReleaseVersion"] = !version.toString().endsWith("SNAPSHOT")
-
-tasks {
-    fun configureDokka(builder: Action<org.jetbrains.dokka.gradle.GradleDokkaSourceSetBuilder>) {
-        val dokkaJavadoc by getting(DokkaTask::class) {
-            dokkaSourceSets {
-                configureEach(builder)
-            }
-        }
+dokka {
+    dokkaSourceSets.main {
+        documentedVisibilities.set(VisibilityModifier.entries.asIterable())
     }
+}
 
-    configureDokka {
-        includeNonPublic.set(true)
-    }
+val sourcesJar = tasks.register<Jar>("sourcesJar") {
+    archiveClassifier.set("sources")
+    from(sourceSets.main.get().allSource)
+}
 
-    val jarComponent = project.components.getByName("java")
-    val sourcesJar by registering(Jar::class) {
-        archiveClassifier.set("sources")
-        from(sourceSets.main.get().allSource)
-    }
-    val dokka = named("dokkaJavadoc", DokkaTask::class)
-    val javadocJar by registering(Jar::class) {
-        archiveClassifier.set("javadoc")
-        from("${layout.buildDirectory}/dokka/javadoc")
-        dependsOn(dokka)
-    }
+val javadocJar = tasks.register<Jar>("javadocJar") {
+    archiveClassifier.set("javadoc")
+    from(tasks.dokkaGeneratePublicationHtml.flatMap { it.outputDirectory })
+}
 
-    publishing {
-        publications {
-            create<MavenPublication>("mavenJava") {
-                pom {
-                    name.set("dokka-graphql-description-plugin")
-                    description.set(project.description)
-                    url.set("https://github.com/graphglue/dokka-graphql-description-plugin")
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            artifact(sourcesJar)
+            artifact(javadocJar)
 
-                    organization {
-                        name.set("Software Quality and Architecture - University of Stuttgart")
-                        url.set("https://www.iste.uni-stuttgart.de/sqa/")
+            pom {
+                name.set("dokka-graphql-description-plugin")
+                description.set(provider { project.description })
+                url.set("https://github.com/graphglue/dokka-graphql-description-plugin")
+
+                organization {
+                    name.set("Software Quality and Architecture - University of Stuttgart")
+                    url.set("https://www.iste.uni-stuttgart.de/sqa/")
+                }
+
+                developers {
+                    developer {
+                        name.set("Niklas Krieger")
+                        email.set("niklas.krieger@iste.uni-stuttgart.de")
+                        organization.set("Software Quality and Architecture - University of Stuttgart")
+                        organizationUrl.set("https://www.iste.uni-stuttgart.de/sqa/")
                     }
-
-                    developers {
-                        developer {
-                            name.set("Niklas Krieger")
-                            email.set("niklas.krieger@iste.uni-stuttgart.de")
-                            organization.set("Software Quality and Architecture - University of Stuttgart")
-                            organizationUrl.set("https://www.iste.uni-stuttgart.de/sqa/")
-                        }
-                        developer {
-                            name.set("Georg Reißner")
-                            email.set("georg.reissner@iste.uni-stuttgart.de")
-                            organization.set("Software Quality and Architecture - University of Stuttgart")
-                            organizationUrl.set("https://www.iste.uni-stuttgart.de/sqa/")
-                        }
-                        developer {
-                            name.set("Christian Kurz")
-                            email.set("chrikuvellberg@gmail.com")
-                            organization.set("Software Quality and Architecture - University of Stuttgart")
-                            organizationUrl.set("https://www.iste.uni-stuttgart.de/sqa/")
-                        }
+                    developer {
+                        name.set("Georg Reißner")
+                        email.set("georg.reissner@iste.uni-stuttgart.de")
+                        organization.set("Software Quality and Architecture - University of Stuttgart")
+                        organizationUrl.set("https://www.iste.uni-stuttgart.de/sqa/")
                     }
-
-                    scm {
-                        connection.set("scm:git:git://github.com/graphglue/dokka-graphql-description-plugin.git")
-                        developerConnection.set("scm:git:https://github.com/graphglue/dokka-graphql-description-plugin.git")
-                        url.set("https://github.com/graphglue/dokka-graphql-description-plugin/tree/main")
-                    }
-
-                    licenses {
-                        license {
-                            name.set("The Apache License, Version 2.0")
-                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                        }
-                    }
-
-                    val mavenPom = this
-                    afterEvaluate {
-                        mavenPom.description.set(description)
+                    developer {
+                        name.set("Christian Kurz")
+                        email.set("chrikuvellberg@gmail.com")
+                        organization.set("Software Quality and Architecture - University of Stuttgart")
+                        organizationUrl.set("https://www.iste.uni-stuttgart.de/sqa/")
                     }
                 }
 
-                from(jarComponent)
-                artifact(sourcesJar.get())
-                artifact(javadocJar.get())
+                scm {
+                    connection.set("scm:git:git://github.com/graphglue/dokka-graphql-description-plugin.git")
+                    developerConnection.set("scm:git:https://github.com/graphglue/dokka-graphql-description-plugin.git")
+                    url.set("https://github.com/graphglue/dokka-graphql-description-plugin/tree/main")
+                }
+
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
             }
         }
     }
+}
 
-    signing {
-        setRequired({
-            (rootProject.extra["isReleaseVersion"] as Boolean)
-        })
-        sign(publishing.publications["mavenJava"])
+signing {
+    setRequired { isReleaseVersion }
+    // In-memory keys keep CI from having to materialise a keyring file.
+    val signingKey = providers.environmentVariable("SIGNING_KEY")
+        .orElse(providers.gradleProperty("signingKey"))
+    val signingPassword = providers.environmentVariable("SIGNING_PASSWORD")
+        .orElse(providers.gradleProperty("signingPassword"))
+    if (signingKey.isPresent) {
+        useInMemoryPgpKeys(signingKey.get(), signingPassword.orNull)
     }
+    sign(publishing.publications["mavenJava"])
+}
 
-    nexusPublishing {
-        repositories {
-            sonatype {
-                nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-                snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-            }
-        }
+nmcpAggregation {
+    centralPortal {
+        username = providers.gradleProperty("mavenCentralUsername")
+            .orElse(providers.environmentVariable("MAVEN_CENTRAL_USERNAME"))
+        password = providers.gradleProperty("mavenCentralPassword")
+            .orElse(providers.environmentVariable("MAVEN_CENTRAL_PASSWORD"))
+        // Upload the deployment, then release it manually from the portal.
+        publishingType = "USER_MANAGED"
+        publicationName = "dokka-graphql-description-plugin:$version"
     }
+}
+
+dependencies {
+    nmcpAggregation(project(path))
 }

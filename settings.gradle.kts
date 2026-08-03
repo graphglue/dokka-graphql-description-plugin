@@ -1,11 +1,13 @@
-pluginManagement {
-    val kotlinVersion: String by settings
-    val dokkaVersion: String by settings
-    val gradleNexusPublishVersion: String by settings
+// Provisions the JDK the toolchain asks for when it is not already installed.
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
 
-    plugins {
-        kotlin("jvm") version kotlinVersion
-        id("org.jetbrains.dokka") version dokkaVersion
-        id("io.github.gradle-nexus.publish-plugin") version gradleNexusPublishVersion
+dependencyResolutionManagement {
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+    repositories {
+        mavenCentral()
     }
 }
+
+rootProject.name = "dokka-graphql-description-plugin"
