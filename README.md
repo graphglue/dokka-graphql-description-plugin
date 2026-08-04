@@ -8,6 +8,6 @@ Requires Dokka 2.
 
 ```kt
 dependencies {
-    dokkaPlugin("io.github.graphglue:dokka-graphql-description-plugin:1.1.2")
+    dokkaPlugin("io.github.graphglue:dokka-graphql-description-plugin:2.0.0")
 }
 ```
